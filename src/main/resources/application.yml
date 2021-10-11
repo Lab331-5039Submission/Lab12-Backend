@@ -21,3 +21,6 @@ jwt:
     authentication:
       path: auth
       refresh: refresh
+    register:
+      path: registers
+      refredh: refresh

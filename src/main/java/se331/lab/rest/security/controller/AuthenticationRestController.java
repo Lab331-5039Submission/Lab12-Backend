@@ -3,6 +3,7 @@ package se331.lab.rest.security.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mobile.device.Device;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,7 +13,10 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import se331.lab.rest.entity.Organizer;
 import se331.lab.rest.security.JwtTokenUtil;
 import se331.lab.rest.security.entity.JwtUser;
 import se331.lab.rest.security.entity.User;
@@ -20,6 +24,7 @@ import se331.lab.rest.security.repository.UserRepository;
 import se331.lab.rest.util.LabMapper;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -81,6 +86,26 @@ public class AuthenticationRestController {
             return ResponseEntity.ok(new JwtAuthenticationResponse(refreshedToken));
         } else {
             return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    @PostMapping("${jwt.route.register.path}")
+    public ResponseEntity<?> registerAuthentication(@RequestBody JwtAuthenticationRequest authenticationRequest, Device device) throws AuthenticationException {
+        PasswordEncoder encoder = new BCryptPasswordEncoder();
+        if (userRepository.findByUsername(authenticationRequest.getUsername()) == null ){
+            userRepository.save(User.builder()
+                    .firstname(authenticationRequest.getUsername())
+                    .lastname(authenticationRequest.getUsername())
+                    .username(authenticationRequest.getUsername())
+                    .password(encoder.encode(authenticationRequest.getPassword()))
+                    .enabled(true)
+                    .lastPasswordResetDate(new Date(System.currentTimeMillis()))
+                    .email(authenticationRequest.getEmail())
+                    .organizer(Organizer.builder().id(1l).build())
+                    .build());
+            return ResponseEntity.ok("Registration successful");
+        }else {
+            return (ResponseEntity<?>) ResponseEntity.status(HttpStatus.BAD_GATEWAY);
         }
     }
 
