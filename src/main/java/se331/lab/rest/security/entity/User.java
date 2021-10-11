@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import se331.lab.rest.entity.Organizer;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -61,4 +62,6 @@ public class User {
     @ManyToMany(fetch = FetchType.EAGER)
     private List<Authority> authorities = new ArrayList<>();
 
+    @OneToOne
+    Organizer organizer;
 }
